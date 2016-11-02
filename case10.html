@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Case10</title>
+	<meta charset="utf-8">
+<style type="text/css">
+svg {width: 640px;height: 640px;
+	border: 0px;
+	}
+path.domain {
+	fill:none;
+	stroke: black;
+}
+
+.grid .tick {
+    stroke: grey;
+    opacity: 0.6;
+}
+.grid path {
+      stroke-width: 0;
+}
+
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+}
+
+
+
+</style>
+</head>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<body>
+
+
+</body>
+<script type="text/javascript">
+d3.csv('sspf_sqft.csv',function(error,data){
+	data.forEach(function(d){
+		d.gross_sqft=+d.gross_sqft;
+		d.price=+d.price;
+	});
+	scatterShow(data);
+
+});
+
+function scatterShow(incData){
+
+	var xValue=function(d){return d.gross_sqft;};
+	var yValue=function(d){return d.price;};
+	
+	var xExtent=d3.extent(incData,function(d){return d.gross_sqft;});
+	var yExtent=d3.extent(incData,function(d){return d.price;});
+
+	console.log(xExtent,yExtent);
+
+	var xScale=d3.scale.linear().domain(xExtent).range([100,600]);
+	var yScale=d3.scale.linear().domain(yExtent).range([600,100]);
+
+	var cValue = function(d){return d.addr_zip;};
+	var colorScale=d3.scale.category20();
+
+	var xAxis=d3.svg.axis().scale(xScale).orient('bottom').tickSize(-500,0,0).ticks(5);
+	var yAxis=d3.svg.axis().scale(yScale).orient('left').tickSize(-500,0,0).ticks(5);
+	
+	svg=d3.select('body').append('svg');
+	
+	d3.select('svg').append('g').attr('id','xaxis').attr('transform',
+		'translate(0,600)').call(xAxis)
+	 .append("text")
+      .attr("class", "label")
+      .attr("x", 600)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("gross_sqft");
+	
+	d3.select('svg').append('g').attr('id','yaxis').attr('transform',
+		'translate(100,0)').call(yAxis)
+	.append("text")
+      .attr("class", "label")
+      .attr("transform", "rotate(-90)")
+      .attr('x',-100)
+      .attr("y", 6)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("价格 (元)");
+
+	
+
+	var numberOfTicks = 5;
+
+	var yAxisGrid = yAxis.ticks(numberOfTicks)
+    .tickSize(500, 0)
+    .tickFormat("")
+    .orient("right");
+
+	var xAxisGrid = xAxis.ticks(numberOfTicks)
+    .tickSize(-500, 0)
+    .tickFormat("")
+    .orient("top");
+
+	svg.append("g")
+    .classed('y', true)
+    .classed('grid', true)
+    .attr('transform',
+		'translate(100,0)')
+    .call(yAxisGrid);
+
+	svg.append("g")
+    .classed('x', true)
+    .classed('grid', true)
+    .attr('transform',
+		'translate(0,100)')
+    .call(xAxisGrid);
+
+    var tooltip=d3.select('body').append('div')
+	.attr('class','tooltip')
+	.style('opacity',0);
+
+	svg.selectAll('circle')
+	.data(incData)
+	.enter()
+	.append('circle')
+	.attr('r',3)
+	.attr('cx',function(d,i){return xScale(d.gross_sqft);})
+	.attr('cy',function(d,i){return yScale(d.price);})
+	.style('fill',function(d){
+		return colorScale(cValue(d));
+	})
+	.style('stroke','blue')
+	.on('mouseover',function(d){
+		tooltip.transition().duration(200)
+		.style('opacity',1);
+
+		tooltip.html('在'+d.addr_zip+'区域<br/>面积是:'+
+			xValue(d)+'<br/>价格是:'+
+			yValue(d))
+		.style('left',(d3.event.pageX+5)+'px')
+		.style('top',(d3.event.pageY-28)+'px')
+		;
+	})
+	.on('mouseout',function(d){
+		tooltip.transition().duration(500)
+		.style('opacity',0);
+	});
+	
+
+	//draw legend
+
+
+	
+
+};
+
+
+</script>
+</html>
