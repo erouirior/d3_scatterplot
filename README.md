@@ -1,2 +1,2 @@
 # d3_scatterplot
-[link](http://erouirior.github.io/05-Experiment/index.html)
+[link](http://erouirior.github.io/d3_scatterplot/index.html)
