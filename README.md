@@ -1,3 +1,3 @@
 # d3_scatterplot
-![Example](images/scatterPlotExample.png)
-[link](http://erouirior.github.io/d3_scatterplot/index.html)
+![It looks like:](images/scatterPlot.png)
+This is my [link:](http://erouirior.github.io/d3_scatterplot/scatterPlot.html)
