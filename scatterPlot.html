@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Case10</title>
+	<meta charset="utf-8">
+<style type="text/css">
+svg {width: 640px;height: 640px;
+	border: 0px;
+	}
+path.domain {
+	fill:none;
+	stroke: black;
+}
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.3;
+}
+.grid path {
+      stroke-width: 0;
+}
+.tooltip {
+  position: absolute;
+  width: 200px;
+  height: 28px;
+  pointer-events: none;
+  stroke: black;
+}
+</style>
+</head>
+<script type="text/javascript" src="http://d3js.org/d3.v3.min.js"></script>
+<body>
+
+
+</body>
+<script type="text/javascript">
+d3.csv('sspf_sqft.csv',function(error,data){
+	var a='10002';
+	data=data.filter(function(d){return d.addr_zip==a;});
+	data.forEach(function(d){
+		d.gross_sqft=+d.gross_sqft;
+		
+		d.PPSF=+d.PPSF;
+	});
+	scatterShow(data);
+});
+function scatterShow(incData){
+	var xValue=function(d){return d.gross_sqft;};
+	var yValue=function(d){return d.PPSF;};
+	
+	var xMax=d3.max(incData,function(d){return d.gross_sqft;});
+	var yMax=d3.max(incData,function(d){return d.PPSF;});
+	var xExtent=d3.extent(incData,function(d){return d.gross_sqft;});
+	var yExtent=d3.extent(incData,function(d){return d.PPSF;});
+	console.log(xExtent,yExtent);
+	var xScale=d3.scale.linear().domain(xExtent).range([100,600]);
+	var yScale=d3.scale.linear().domain(yExtent).range([600,100]);
+	var cValue = function(d){return d.addr_street;};
+	var colorScale=d3.scale.category20();
+	var xAxis=d3.svg.axis().scale(xScale).orient('bottom').tickSize(-500,0,0).ticks(5);
+	var yAxis=d3.svg.axis().scale(yScale).orient('left').tickSize(-500,0,0).ticks(5);
+	
+	svg=d3.select('body').append('svg');
+	
+	d3.select('svg').append('g').attr('id','xaxis').attr('transform',
+		'translate(0,600)').call(xAxis)
+	 .append("text")
+      .attr("class", "label")
+      .attr("x", 600)
+      .attr("y", -6)
+      .style("text-anchor", "end")
+      .text("SquareFootage");
+	
+	d3.select('svg').append('g').attr('id','yaxis').attr('transform',
+		'translate(100,0)').call(yAxis)
+	.append("text")
+      .attr("class", "label")
+      //.attr("transform", "rotate(-90)")
+      .attr('x',80)
+      .attr("y", 80)
+      .attr("dy", ".71em")
+      .style("text-anchor", "end")
+      .text("PricePerSF");
+	
+	//var numberOfTicks = 10;
+	var yAxisGrid = yAxis.ticks(10)
+    .tickSize(500, 0)
+    .tickFormat("")
+    .orient("right");
+	var xAxisGrid = xAxis.ticks(10)
+    .tickSize(-500, 0)
+    .tickFormat("")
+    .orient("top");
+	svg.append("g")
+    .classed('y', true)
+    .classed('grid', true)
+    .attr('transform',
+		'translate(100,0)')
+    .call(yAxisGrid);
+	svg.append("g")
+    .classed('x', true)
+    .classed('grid', true)
+    .attr('transform',
+		'translate(0,100)')
+    .call(xAxisGrid);
+    var tooltip=d3.select('body').append('div')
+	.attr('class','tooltip')
+	.style('opacity',0);
+	/*svg.selectAll('circle')
+	.data(incData)
+	.enter()
+	.append('circle')
+	.attr('r',3)
+	.attr('cx',function(d,i){return xScale(d.gross_sqft);})
+	.attr('cy',function(d,i){return yScale(d.price);})*/
+	svg.selectAll(".point")
+      .data(incData)
+    .enter().append("path")
+      .attr("class", "point")
+      .attr("d", d3.svg.symbol().type('circle').size(80))//d3.svg.symbol().type("triangle-up"))
+      .attr("transform", function(d) { return "translate(" + xScale(d.gross_sqft) 
+      	+ "," + yScale(d.PPSF) + ")"})
+	.style('fill',function(d){
+		return colorScale(cValue(d));
+	})
+	.style('opacity',0.7)
+	//.style('stroke','blue')
+	.on('mouseover',function(d){
+		
+		d3.select(this)
+		.transition()
+		.duration(100)
+		.attr('d',d3.svg.symbol().type('circle')
+			.size(150))
+		.style('opacity',1);
+		tooltip.transition().duration(200)
+		.style('opacity',1);
+		tooltip.html('Street: '+d.addr_street)
+		.style('left',(d3.event.pageX+5)+'px')
+		.style('top',(d3.event.pageY-28)+'px')
+		;
+	})
+	.on('mouseout',function(d){
+		
+		d3.select(this)
+		.transition()
+		.duration(100)
+		.attr('d',d3.svg.symbol().type('circle')
+			.size(80))
+		.style('opacity',0.7);
+		tooltip.transition().duration(500)
+		.style('opacity',0);
+	});
+	
+	//draw legend
+	
+};
+</script>
+</html>
